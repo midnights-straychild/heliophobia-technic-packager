@@ -1,0 +1,11 @@
+#!/usr/bin/env node
+
+var program = require('commander'),
+    modpack = require('./app/modpack');
+
+program
+    .parse(process.argv);
+
+branch = program.args;
+
+modpack.createModPackFromBranch(branch);

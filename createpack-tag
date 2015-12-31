@@ -1,0 +1,11 @@
+#!/usr/bin/env node
+
+var program = require('commander'),
+    modpack = require('./app/modpack');
+
+program
+    .parse(process.argv);
+
+tag = program.args;
+
+modpack.createModPackFromTag(tag);

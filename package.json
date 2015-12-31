@@ -3,6 +3,15 @@
   "version": "0.0.1",
   "dependencies": {
     "commander": "^2.9.0",
-    "github-webhook-handler": "^0.5.0"
+    "github-webhook-handler": "^0.5.0",
+    "nodegit": "^0.6.3",
+    "rimraf": "^2.5.0",
+    "unzip": "^0.1.11"
+  },
+  "engines": {
+    "node": ">=4.2.4"
+  },
+  "bin": {
+    "createpack": "createpack.js"
   }
 }
