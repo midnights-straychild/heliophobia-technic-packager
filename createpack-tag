@@ -3,6 +3,8 @@
 var program = require('commander'),
     modpack = require('./app/modpack');
 
+GLOBAL.runMode = "cli";
+
 program
     .parse(process.argv);
 

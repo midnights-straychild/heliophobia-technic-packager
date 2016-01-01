@@ -1,9 +1,11 @@
 /**
  * Created by reiji-maigo on 30.12.2015.
  */
-var http = require('http')
-var createHandler = require('github-webhook-handler')
-var handler = createHandler({path: '/build', secret: '34t809ut9ugfd$'})
+var http = require('http'),
+    createHandler = require('github-webhook-handler'),
+    handler = createHandler({path: '/build', secret: '34t809ut9ugfd$'});
+
+GLOBAL.runMode = "deamon";
 
 http.createServer(function (req, res) {
     handler(req, res, function (err) {

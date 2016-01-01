@@ -1,17 +1,21 @@
 {
   "name": "heliophobia-technic-packager",
   "version": "0.0.1",
-  "dependencies": {
-    "commander": "^2.9.0",
-    "github-webhook-handler": "^0.5.0",
-    "nodegit": "^0.6.3",
-    "rimraf": "^2.5.0",
-    "unzip": "^0.1.11"
-  },
+  "description": "Small CLI and deamon to build a Minecraft Technic Modpack from a git repo. It listens to new releases via webhook and attaches assets like resourcepacks",
+  "repository": "https://github.com/midnights-straychild/heliophobia-technic-packager",
+  "license": "MIT",
   "engines": {
     "node": ">=4.2.4"
   },
+  "dependencies": {
+    "commander": "^2.9.0",
+    "forever-monitor": "^1.7.0",
+    "github-webhook-handler": "^0.5.0",
+    "nodegit": "^0.6.3",
+    "unzip": "^0.1.11",
+    "winston": "^2.1.1"
+  },
   "bin": {
-    "createpack": "createpack.js"
+    "createpack": "createpack"
   }
 }
