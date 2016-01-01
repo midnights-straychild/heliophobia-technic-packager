@@ -16,8 +16,6 @@
     "winston": "^2.1.1"
   },
   "bin": {
-    "createpack": "createpack",
-    "createpack-branch": "createpack-branch",
-    "createpack-tag": "createpack-tag"
+    "createpack": "createpack"
   }
 }
