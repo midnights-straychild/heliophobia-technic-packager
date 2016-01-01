@@ -1,9 +1,9 @@
 /**
  * Created by reiji-maigo on 30.12.2015.
  */
-var modpack = require('modpack'),
+var modpack = require('./app/modpack.js'),
     http = require('http'),
-    logger = require("logger").getLogger(),
+    logger = require("./app/logger.js").getLogger(),
     createHandler = require('github-webhook-handler'),
     handler = createHandler({path: '/build', secret: '34t809ut9ugfd$'});
 
