@@ -16,7 +16,7 @@ var github = require("./github"),
         logger.info("Run-Mode: '" + GLOBAL.runMode + "'");
         logger.info("Attempting to deploy Modpack for branch '" + branch + "'");
 
-        var path = config.paths.tmp + GLOBAL.runMode + "/";
+        var path = "tmp/" + GLOBAL.runMode + "/";
 
         if (fs.existsSync(path)) {
             logger.info("Repository available. Updating...");
@@ -27,29 +27,29 @@ var github = require("./github"),
         }
     },
 
-    createModPackFromTag = function (tag) {
+    createModPackFromTag = function (oid, ref) {
         if (GLOBAL.runMode === "undefined") {
             logger.error("Run-Mode not set");
             process.exit(1);
         }
 
         logger.info("Run-Mode: '" + GLOBAL.runMode + "'");
-        logger.info("Attempting to deploy Modpack for tag '" + tag + "'");
+        logger.info("Attempting to deploy Modpack for oid '" + oid + "'");
 
-        var path = config.paths.tmp + GLOBAL.runMode + "/";
+        var path = "tmp/" + GLOBAL.runMode + "/";
 
-        if (fs.existsSync(path)) {
-            logger.info("Repository available. Updating...");
-            github.updateTag(tag, path, createZip);
-        } else {
+        if (!fs.existsSync(path)) {
             logger.info("Repository not available. Cloning...");
-            github.cloneTag(tag, path, createZip);
+            github.cloneBranch("master", path, createZip);
         }
+
+        logger.info("Repository available. Updating...");
+        github.updateTag(oid, path, ref, createZip);
     },
 
-    createZip = function (path, branch) {
+    createZip = function (path, branchOrTag) {
         var AdmZip = require("adm-zip"),
-            targetFile = config.packName + "-" + branch + ".zip",
+            targetFile = config.packName + "-" + branchOrTag + ".zip",
             zip = new AdmZip();
 
         logger.info("Packing everthing up.");

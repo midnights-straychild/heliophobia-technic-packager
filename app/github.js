@@ -14,23 +14,7 @@ var config = require("./config.js").config,
         options.checkoutBranch = branch;
 
         clone(config.repo, path, options)
-            .then(function (repo) {
-                callback(path, branch);
-            })
-            .catch(function (err) {
-                logger.error(err);
-            });
-    },
-    cloneTag = function (tag, path, callback) {
-        var clone = NodeGit.Clone.clone,
-            options = {};
-
-        tag = typeof tag !== 'undefined' ? tag : config.defaultTag;
-        options.version = tag;
-
-        clone(config.repo, path, options)
-            .then(function (repo) {
-                logger.info("Pull done.")
+            .then(function () {
                 callback(path, branch);
             })
             .catch(function (err) {
@@ -57,35 +41,25 @@ var config = require("./config.js").config,
             });
     },
 
-    updateTag = function (tag, path, callback) {
-        var Tag = NodeGit.Tag,
-            Checkout = NodeGit.Checkout;
+    updateTag = function (oid, path, ref, callback) {
+        var Checkout = NodeGit.Checkout,
+            Tag = NodeGit.Tag;
 
         Repository.open(path).then(function (repo) {
-                return Tag.list(repo)
-                    .then(function (array) {
-                        tag = typeof tag !== 'undefined' ? tag : config.defaultTag;
-                        return Tag.lookup(repo, tag).catch(function (error) {
-                            logger.error(error.message);
-                            process.exit(1);
-                        });
-                    })
-                    .then(function (tag) {
-                        return Checkout.tree(repo, tag.targetId(), {checkoutStrategy: Checkout.STRATEGY.SAFE_CREATE})
-                            .then(function () {
-                                repo.setHeadDetached(tag.targetId(), repo.defaultSignature, "Checkout: HEAD " + tag.targetId());
-                            })
-                            .done(function() {
-                                logger.info("Checkout done.")
-                            });
-                    });
-            })
-            .catch(function (error) {
-                logger.error(err);
-            });
+            return Checkout.tree(repo, oid, {checkoutStrategy: Checkout.STRATEGY.SAFE_CREATE})
+                .then(function () {
+                    repo.setHeadDetached(oid, repo.defaultSignature, "Checkout: HEAD " + oid);
+                })
+                .done(function () {
+                    var tag = ref.split("/")[2];
+
+                    logger.info("Checkout done of tag '" + tag + "'.");
+
+                    callback(path, tag);
+                });
+        });
     };
 
 exports.cloneBranch = cloneBranch;
-exports.cloneTag = cloneTag;
 exports.updateBranch = updateBranch;
 exports.updateTag = updateTag;

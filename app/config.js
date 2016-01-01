@@ -1,7 +1,6 @@
 var config = {
         "packName": "heliophobia-custom",
         "paths": {
-            "tmp": "tmp/",
             "resourcepacks": "resourcepacks/",
             "packages": "packages/",
             "logs": "logs/"

@@ -6,4 +6,4 @@ modpack = require('./app/modpack');
 
 runMode = "cli";
 
-modpack.createModPackFromBranch("stage");
+modpack.createModPackFromTag("e779e08d8ad7bc7c11a4f17b8dddee79a89d35a1", "refs/tags/1.3.0_pre");

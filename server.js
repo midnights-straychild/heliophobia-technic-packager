@@ -1,7 +1,9 @@
 /**
  * Created by reiji-maigo on 30.12.2015.
  */
-var http = require('http'),
+var modpack = require('modpack'),
+    http = require('http'),
+    logger = require("logger").getLogger(),
     createHandler = require('github-webhook-handler'),
     handler = createHandler({path: '/build', secret: '34t809ut9ugfd$'});
 
@@ -15,19 +17,19 @@ http.createServer(function (req, res) {
 }).listen(25570);
 
 handler.on('error', function (err) {
-    console.error('Error:', err.message);
+    logger.error('Error:', err.message);
 });
 
 handler.on('push', function (event) {
-    console.log('Received a push event for %s to %s',
+    logger.info('Received a push event for %s to %s',
         event.payload.repository.name,
         event.payload.ref);
 });
 
 handler.on('release', function (event) {
-    console.log('Received an issue event for %s action=%s: #%d %s',
+    logger.info('Received an issue event for %s action=%s',
         event.payload.repository.name,
-        event.payload.action,
-        event.payload.issue.number,
-        event.payload.issue.title);
+        event.payload.action);
+
+    modpack.createModPackFromTag(event.payload.after, event.payload.ref);
 });
