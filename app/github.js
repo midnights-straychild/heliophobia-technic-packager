@@ -15,7 +15,7 @@ var config = require("./config.js").config,
 
         clone(config.repo, path, options)
             .then(function (repo) {
-                callback();
+                callback(path, branch);
             })
             .catch(function (err) {
                 logger.error(err);
@@ -30,23 +30,25 @@ var config = require("./config.js").config,
 
         clone(config.repo, path, options)
             .then(function (repo) {
-                callback();
+                logger.info("Pull done.")
+                callback(path, branch);
             })
             .catch(function (err) {
                 logger.error(err);
             });
     },
+
     updateBranch = function (branch, path, callback) {
-        var Branch = NodeGit.Branch,
+        var Checkout = NodeGit.Checkout,
             options = {};
 
         branch = typeof branch !== 'undefined' ? branch : config.defaultBranch;
         options.checkoutBranch = branch;
 
         Repository.open(path).then(function (repo) {
-            return Branch.lookup(repo, branch)
-                .then(function (reference) {
-
+            return Checkout.head(repo)
+                .then(function () {
+                    callback(path, branch);
                 })
 
         })
@@ -54,6 +56,7 @@ var config = require("./config.js").config,
                 logger.error(err);
             });
     },
+
     updateTag = function (tag, path, callback) {
         var Tag = NodeGit.Tag,
             Checkout = NodeGit.Checkout;
