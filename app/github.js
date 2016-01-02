@@ -30,16 +30,18 @@ var config = require("./config.js").config,
     checkoutBranch = function (branchName, path, callback) {
         var Branch = NodeGit.Branch;
 
-        Repository.open(path).then(function (repo) {
-            return Promise.resolve(repo.getBranchCommit(branchName));
-        }).then(function (commit) {
-            return Branch.create(repo, branchName, commit, 0)
-        }).then(function (reference) {
-            Branch.setUpstream(reference, branchName);
-            repo.checkoutBranch(reference)
-        }).then(function () {
-            callback(path, branchName);
-        });
+        //Repository.open(path).then(function (repo) {
+        //    return Promise.resolve(repo.getBranchCommit(branchName));
+        //}).then(function (commit) {
+        //    return Branch.create(repo, branchName, commit, 0)
+        //}).then(function (reference) {
+        //    Branch.setUpstream(reference, branchName);
+        //    repo.checkoutBranch(reference)
+        //}).then(function () {
+        //    callback(path, branchName);
+        //});
+
+        callback(path, branchName);
     },
 
     checkoutTag = function (tagName, path, callback) {
