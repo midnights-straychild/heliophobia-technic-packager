@@ -13,8 +13,13 @@ var config = require("./config.js").config,
         branch = typeof branch !== 'undefined' ? branch : config.defaultBranch;
         options.checkoutBranch = branch;
 
-        clone(config.repo, path, options)
+        clone(config.repo, path)
             .then(function () {
+                Repository.open(path)
+                    .then(function (repo) {
+                        repo.fetchAll();
+                    });
+
                 callback(path, branch);
             })
             .catch(function (err) {
@@ -22,44 +27,41 @@ var config = require("./config.js").config,
             });
     },
 
-    updateBranch = function (branch, path, callback) {
-        var Checkout = NodeGit.Checkout,
-            options = {};
-
-        branch = typeof branch !== 'undefined' ? branch : config.defaultBranch;
-        options.checkoutBranch = branch;
+    checkoutBranch = function (branchName, path, callback) {
+        var Branch = NodeGit.Branch;
 
         Repository.open(path).then(function (repo) {
-            return Checkout.head(repo)
-                .then(function () {
-                    callback(path, branch);
-                })
-
-        })
-            .catch(function (error) {
-                logger.error(err);
-            });
+            return Promise.resolve(repo.getBranchCommit(branchName));
+        }).then(function (commit) {
+            return Branch.create(repo, branchName, commit, 0)
+        }).then(function (reference) {
+            Branch.setUpstream(reference, branchName);
+            repo.checkoutBranch(reference)
+        }).then(function () {
+            callback(path, branchName);
+        });
     },
 
-    updateTag = function (oid, path, ref, callback) {
-        var Checkout = NodeGit.Checkout,
-            Tag = NodeGit.Tag;
+    checkoutTag = function (tagName, path, callback) {
+        var Checkout = NodeGit.Checkout;
 
-        Repository.open(path).then(function (repo) {
-            return Checkout.tree(repo, oid, {checkoutStrategy: Checkout.STRATEGY.SAFE_CREATE})
-                .then(function () {
-                    repo.setHeadDetached(oid, repo.defaultSignature, "Checkout: HEAD " + oid);
-                })
-                .done(function () {
-                    var tag = ref.split("/")[2];
+        Repository.open(path)
+            .then(function (repo) {
+                repo.getTagByName(tagName)
+                    .then(function (oid) {
+                        Checkout.tree(repo, oid, {checkoutStrategy: Checkout.STRATEGY.SAFE_CREATE})
+                            .then(function () {
+                                repo.setHeadDetached(oid, repo.defaultSignature, "Checkout: HEAD " + oid);
+                            })
+                            .done(function () {
+                                logger.info("Checkout done of tag '" + branchName + "'.");
 
-                    logger.info("Checkout done of tag '" + tag + "'.");
-
-                    callback(path, tag);
-                });
-        });
+                                callback(path, branchName);
+                            });
+                    });
+            });
     };
 
 exports.cloneBranch = cloneBranch;
-exports.updateBranch = updateBranch;
-exports.updateTag = updateTag;
+exports.checkoutBranch = checkoutBranch;
+exports.checkoutTag = checkoutTag;

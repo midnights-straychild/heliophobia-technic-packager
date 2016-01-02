@@ -20,21 +20,21 @@ var github = require("./github"),
 
         if (fs.existsSync(path)) {
             logger.info("Repository available. Updating...");
-            github.updateBranch(branch, path, createZip);
+            github.checkoutBranch(branch, path, createZip);
         } else {
             logger.info("Repository not available. Cloning...");
             github.cloneBranch(branch, path, createZip);
         }
     },
 
-    createModPackFromTag = function (oid, ref) {
+    createModPackFromTag = function (tag) {
         if (GLOBAL.runMode === "undefined") {
             logger.error("Run-Mode not set");
             process.exit(1);
         }
 
         logger.info("Run-Mode: '" + GLOBAL.runMode + "'");
-        logger.info("Attempting to deploy Modpack for oid '" + oid + "'");
+        logger.info("Attempting to deploy Modpack for tag '" + tag + "'");
 
         var path = "tmp/" + GLOBAL.runMode + "/";
 
@@ -44,7 +44,7 @@ var github = require("./github"),
         }
 
         logger.info("Repository available. Updating...");
-        github.updateTag(oid, path, ref, createZip);
+        github.checkoutTag(tag, path, createZip);
     },
 
     createZip = function (path, branchOrTag) {
@@ -58,7 +58,7 @@ var github = require("./github"),
             [ "bin", "mods", "config"].forEach(function(folder) {
                 try {
                     if (fs.statSync(path + folder).isDirectory()) {
-                        zip.addLocalFolder(path + folder, "../../" + folder);
+                        zip.addLocalFolder(path + folder, folder);
                         logger.info("Added '" + folder + "' from '" + path + "'.");
                     }
                 } catch(e) {

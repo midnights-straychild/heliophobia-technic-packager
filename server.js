@@ -27,9 +27,9 @@ handler.on('push', function (event) {
 });
 
 handler.on('release', function (event) {
-    logger.info('Received an issue event for %s action=%s',
+    logger.info('Received an release event for %s action=%s',
         event.payload.repository.name,
         event.payload.action);
 
-    modpack.createModPackFromTag(event.payload.after, event.payload.ref);
+    modpack.createModPackFromTag(event.payload.tag_name);
 });
