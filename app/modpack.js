@@ -61,30 +61,35 @@ var github = require("./github"),
     /**
      *
      * @param path
-     * @param branchOrTag
+     * @param branch
+     * @param tag
      */
-    createPack = function (path, branchOrTag) {
-        var pack = config.packName + "-" + branchOrTag,
+    createPack = function (path, branch, tag) {
+        var pack = config.packName + "-" + branch,
             packWorkingPath = config.paths.packages + pack,
             packFilePath = config.paths.packages + pack + ".zip";
+
+        if(tag !== undefined) {
+            packWorkingPath = conf.paths.pack + config.packName + "-" + tag;
+        }
 
         logger.info("Packing everthing up.");
 
         // Remove old working folder pack
         try {
-            if (fs.statSync(config.paths.packages + pack).isDirectory()) {
-                deleteFolderRecursiveSync(config.paths.packages + pack);
-                logger.info("Removed working folder pack '" + config.paths.packages + pack + "'");
+            if (fs.statSync(packWorkingPath).isDirectory()) {
+                deleteFolderRecursiveSync(packWorkingPath);
+                logger.info("Removed working folder pack '" + packWorkingPath + "'");
             }
         } catch (e) {
             logger.error("nothing deleted. " + e);
         }
 
         // Created folder for pack
-        if (!fs.existsSync(config.paths.packages + pack)) {
-            fs.mkdirSync(config.paths.packages + pack);
+        if (!fs.existsSync(packWorkingPath)) {
+            fs.mkdirSync(packWorkingPath);
         }
-        logger.info("Created folder for pack '" + config.paths.packages + pack + "'");
+        logger.info("Created folder for pack '" + packWorkingPath + "'");
 
         // Copy Files to release directory
         logger.info("Copy Files to release directory...");
@@ -92,7 +97,7 @@ var github = require("./github"),
         if (fs.statSync(config.paths.resourcepacks).isDirectory()) {
             fs.copySync(
                 config.paths.resourcepacks,
-                config.paths.packages + pack + "/" + config.paths.resourcepacks,
+                packWorkingPath + "/" + config.paths.resourcepacks,
                 {preserveTimestamps: true}
             );
             logger.info("Added resource packs from '" + config.paths.resourcepacks + "'.");
@@ -104,7 +109,7 @@ var github = require("./github"),
                 if (fs.statSync(path + folder).isDirectory()) {
                     fs.copySync(
                         path + folder,
-                        config.paths.packages + pack + "/" + folder,
+                        packWorkingPath + "/" + folder,
                         {preserveTimestamps: true}
                     );
                     logger.info("Added '" + folder + "' from '" + path + "'.");
@@ -118,7 +123,7 @@ var github = require("./github"),
             }
         });
 
-        logger.info("Put everything to '" + config.paths.packages + pack + "'.");
+        logger.info("Put everything to '" + packWorkingPath + "'.");
 
         // Remove old pack file
         try {

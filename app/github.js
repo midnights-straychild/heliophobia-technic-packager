@@ -46,7 +46,7 @@ var config = require("./config.js").config,
         var simpleGit = require('simple-git')(path);
 
         simpleGit.fetch("origin", "master").checkout("tags/" + tagName, function () {
-            callback(path, tagName);
+            callback(path, "master", tagName);
         });
     };
 
