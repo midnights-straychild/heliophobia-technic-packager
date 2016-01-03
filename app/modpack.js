@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Created by reiji-maigo on 30.12.2015.
  */
@@ -6,7 +8,12 @@ var github = require("./github"),
     config = require("./config.js").config,
     logger = require("./logger.js").getLogger(),
     email = require("./email.js"),
+    Zip = require("./zip.js"),
 
+    /**
+     *
+     * @param branch
+     */
     createModPackFromBranch = function (branch) {
         if (GLOBAL.runMode === "undefined") {
             logger.error("Run-Mode not set");
@@ -27,6 +34,10 @@ var github = require("./github"),
         }
     },
 
+    /**
+     *
+     * @param tag
+     */
     createModPackFromTag = function (tag) {
         if (GLOBAL.runMode === "undefined") {
             logger.error("Run-Mode not set");
@@ -47,52 +58,67 @@ var github = require("./github"),
         github.checkoutTag(tag, path, createZip);
     },
 
+    /**
+     *
+     * @param path
+     * @param branchOrTag
+     */
     createZip = function (path, branchOrTag) {
-        var AdmZip = require("adm-zip"),
-            targetFile = config.packName + "-" + branchOrTag + ".zip",
-            zip = new AdmZip();
+        var zip = new Zip(),
+            targetFile = config.packName + "-" + branchOrTag + ".zip";
 
         logger.info("Packing everthing up.");
 
+        // Add folder from Repo
         if (fs.statSync(path).isDirectory()) {
-            [ "bin", "mods", "config"].forEach(function(folder) {
+            ["bin", "mods", "config"].forEach(function (folder) {
                 try {
                     if (fs.statSync(path + folder).isDirectory()) {
                         zip.addLocalFolder(path + folder, folder);
                         logger.info("Added '" + folder + "' from '" + path + "'.");
                     }
-                } catch(e) {
-                    logger.warn("Folder '" +  path + folder + "' not found!");
+                } catch (e) {
+                    if(e.code === "ENOENT") {
+                        logger.warn("Folder '" + path + folder + "' not found! " + e);
+                    } else {
+                        throw e;
+                    }
                 }
             });
         }
 
-        if (fs.statSync(config.paths.resourcepacks).isDirectory()) {
-            zip.addLocalFolder(config.paths.resourcepacks, config.paths.resourcepacks);
-            logger.info("Added resource packs from '" + config.paths.resourcepacks + "'.");
-        }
+        // Add Ressource Packs
+        //if (fs.statSync(config.paths.resourcepacks).isDirectory()) {
+        //    zip.addLocalFolder(config.paths.resourcepacks, config.paths.resourcepacks);
+        //    logger.info("Added resource packs from '" + config.paths.resourcepacks + "'.");
+        //}
 
+        // Removing old file if still there
         try {
             if (fs.statSync(config.paths.packages + targetFile).isFile()) {
                 fs.unlinkSync(config.paths.packages + targetFile);
                 logger.info("Removed existing pack '" + config.paths.packages + targetFile + "'");
             }
-        } catch(e) {
+        } catch (e) {
             // do nothing
         }
 
+        // Compress to File
         if (fs.statSync(config.paths.packages).isDirectory()) {
             logger.info("Compressing...");
-            zip.writeZip(config.paths.packages + targetFile);
+
+            zip.compressAndWriteZip(config.paths.packages + targetFile);
+
             logger.info("Put everything to '" + config.paths.packages + targetFile + "'.");
         }
 
-        try {
-            email.send("Pack build finished","bla");
-            logger.info("Email sent to '" + config.email.sendTo + "'");
-        } catch(e) {
-            logger.error("Email sending failed: '" + e + "'");
-        }
+        // Send Mail
+        //try {
+        //    email.send("Pack build finished", "bla");
+        //    logger.info("Email sent to '" + config.email.sendTo + "'");
+        //} catch (e) {
+        //    logger.error("Email sending failed: '" + e + "'");
+        //}
 
     };
 

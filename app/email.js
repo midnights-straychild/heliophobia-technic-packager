@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Created by reiji-maigo on 01.01.2016.
  */
@@ -12,6 +14,12 @@ var email = require("emailjs/email"),
         tls: true,
         authentication: email.SMTP.authentication.LOGIN
     }),
+
+    /**
+     *
+     * @param subject
+     * @param text
+     */
     send = function(subject, text) {
         server.send({
             from:    config.email.sendFrom,

@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Created by reiji-maigo on 31.12.2015.
  */
@@ -9,6 +11,11 @@ var config = require("./config.js").config,
             new (winston.transports.File)({filename: config.paths.logs + 'main.log'})
         ]
     }),
+
+    /**
+     *
+     * @returns winston.Logger
+     */
     getLogger = function () {
         return logger;
     };

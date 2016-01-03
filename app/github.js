@@ -1,67 +1,53 @@
+'use strict';
+
 /**
  * Created by reiji-maigo on 30.12.2015.
  */
 var config = require("./config.js").config,
     logger = require("./logger.js").getLogger(),
-    NodeGit = require("nodegit"),
-    Repository = NodeGit.Repository,
 
-    cloneBranch = function (branch, path, callback) {
-        var clone = NodeGit.Clone.clone,
-            options = {};
+    /**
+     *
+     * @param branchName
+     * @param path
+     * @param callback
+     */
+    cloneBranch = function (branchName, path, callback) {
+        var simpleGit = require('simple-git')(path);
 
-        branch = typeof branch !== 'undefined' ? branch : config.defaultBranch;
-        options.checkoutBranch = branch;
+        branchName = typeof branchName !== 'undefined' ? branchName : config.defaultBranch;
 
-        clone(config.repo, path)
-            .then(function () {
-                Repository.open(path)
-                    .then(function (repo) {
-                        repo.fetchAll();
-                    });
-
-                callback(path, branch);
-            })
-            .catch(function (err) {
-                logger.error(err);
-            });
+        simpleGit.clone(config.repo, path).fetch("origin", branchName).checkout(branchName, function () {
+            callback(path, branchName);
+        });
     },
 
+    /**
+     *
+     * @param branchName
+     * @param path
+     * @param callback
+     */
     checkoutBranch = function (branchName, path, callback) {
-        var Branch = NodeGit.Branch;
+        var simpleGit = require('simple-git')(path);
 
-        //Repository.open(path).then(function (repo) {
-        //    return Promise.resolve(repo.getBranchCommit(branchName));
-        //}).then(function (commit) {
-        //    return Branch.create(repo, branchName, commit, 0)
-        //}).then(function (reference) {
-        //    Branch.setUpstream(reference, branchName);
-        //    repo.checkoutBranch(reference)
-        //}).then(function () {
-        //    callback(path, branchName);
-        //});
-
-        callback(path, branchName);
+        simpleGit.fetch("origin", branchName).checkout(branchName, function () {
+            callback(path, branchName);
+        });
     },
 
+    /**
+     *
+     * @param tagName
+     * @param path
+     * @param callback
+     */
     checkoutTag = function (tagName, path, callback) {
-        var Checkout = NodeGit.Checkout;
+        var simpleGit = require('simple-git')(path);
 
-        Repository.open(path)
-            .then(function (repo) {
-                repo.getTagByName(tagName)
-                    .then(function (oid) {
-                        Checkout.tree(repo, oid, {checkoutStrategy: Checkout.STRATEGY.SAFE_CREATE})
-                            .then(function () {
-                                repo.setHeadDetached(oid, repo.defaultSignature, "Checkout: HEAD " + oid);
-                            })
-                            .done(function () {
-                                logger.info("Checkout done of tag '" + branchName + "'.");
-
-                                callback(path, branchName);
-                            });
-                    });
-            });
+        simpleGit.fetch("origin", "master").checkout("tags/" + tagName, function () {
+            callback(path, tagName);
+        });
     };
 
 exports.cloneBranch = cloneBranch;

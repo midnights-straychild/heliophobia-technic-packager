@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 var program = require('commander'),
-    modpack = require('./app/modpack');
+    modpack = require('./app/modpack'),
+    tag;
 
 GLOBAL.runMode = "cli";
 
