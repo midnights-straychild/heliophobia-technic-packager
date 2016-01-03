@@ -4,11 +4,10 @@
  * Created by reiji-maigo on 30.12.2015.
  */
 var github = require("./github"),
-    fs = require("fs"),
+    fs = require("fs-extra"),
     config = require("./config.js").config,
     logger = require("./logger.js").getLogger(),
     email = require("./email.js"),
-    Zip = require("./zip.js"),
 
     /**
      *
@@ -27,10 +26,10 @@ var github = require("./github"),
 
         if (fs.existsSync(path)) {
             logger.info("Repository available. Updating...");
-            github.checkoutBranch(branch, path, createZip);
+            github.checkoutBranch(branch, path, createPack);
         } else {
             logger.info("Repository not available. Cloning...");
-            github.cloneBranch(branch, path, createZip);
+            github.cloneBranch(branch, path, createPack);
         }
     },
 
@@ -51,11 +50,11 @@ var github = require("./github"),
 
         if (!fs.existsSync(path)) {
             logger.info("Repository not available. Cloning...");
-            github.cloneBranch("master", path, createZip);
+            github.cloneBranch("master", path, createPack);
         }
 
         logger.info("Repository available. Updating...");
-        github.checkoutTag(tag, path, createZip);
+        github.checkoutTag(tag, path, createPack);
     },
 
     /**
@@ -63,54 +62,56 @@ var github = require("./github"),
      * @param path
      * @param branchOrTag
      */
-    createZip = function (path, branchOrTag) {
-        var zip = new Zip(),
-            targetFile = config.packName + "-" + branchOrTag + ".zip";
+    createPack = function (path, branchOrTag) {
+        var pack = config.packName + "-" + branchOrTag;
 
         logger.info("Packing everthing up.");
 
-        // Add folder from Repo
-        if (fs.statSync(path).isDirectory()) {
-            ["bin", "mods", "config"].forEach(function (folder) {
-                try {
-                    if (fs.statSync(path + folder).isDirectory()) {
-                        zip.addLocalFolder(path + folder, folder);
-                        logger.info("Added '" + folder + "' from '" + path + "'.");
-                    }
-                } catch (e) {
-                    if(e.code === "ENOENT") {
-                        logger.warn("Folder '" + path + folder + "' not found! " + e);
-                    } else {
-                        throw e;
-                    }
-                }
-            });
-        }
-
-        // Add Ressource Packs
-        //if (fs.statSync(config.paths.resourcepacks).isDirectory()) {
-        //    zip.addLocalFolder(config.paths.resourcepacks, config.paths.resourcepacks);
-        //    logger.info("Added resource packs from '" + config.paths.resourcepacks + "'.");
-        //}
-
         // Removing old file if still there
         try {
-            if (fs.statSync(config.paths.packages + targetFile).isFile()) {
-                fs.unlinkSync(config.paths.packages + targetFile);
-                logger.info("Removed existing pack '" + config.paths.packages + targetFile + "'");
+            if (fs.statSync(config.paths.packages + pack).isDirectory()) {
+                deleteFolderRecursive(config.paths.packages + pack + "/");
+                logger.info("Removed existing pack '" + config.paths.packages + pack + "'");
             }
         } catch (e) {
             // do nothing
         }
 
-        // Compress to File
-        if (fs.statSync(config.paths.packages).isDirectory()) {
-            logger.info("Compressing...");
+        // Created folder for pack
+        fs.mkdir(config.paths.packages + pack);
+        logger.info("Created folder for pack '" + config.paths.packages + pack + "'");
 
-            zip.compressAndWriteZip(config.paths.packages + targetFile);
+        logger.info("Copy Files to release directory...");
 
-            logger.info("Put everything to '" + config.paths.packages + targetFile + "'.");
+        if (fs.statSync(config.paths.resourcepacks).isDirectory()) {
+            fs.copy(
+                config.paths.resourcepacks,
+                config.paths.packages + pack + "/" + config.paths.resourcepacks,
+                { preserveTimestamps: true }
+            );
+            logger.info("Added resource packs from '" + config.paths.resourcepacks + "'.");
         }
+
+        ["bin", "mods", "config"].forEach(function (folder) {
+            try {
+                if (fs.statSync(path + folder).isDirectory()) {
+                    fs.copy(
+                        path + folder,
+                        config.paths.packages + pack + "/" + folder,
+                        { preserveTimestamps: true }
+                    );
+                    logger.info("Added '" + folder + "' from '" + path + "'.");
+                }
+            } catch (e) {
+                if (e.code === "ENOENT") {
+                    logger.warn("Folder '" + path + folder + "' not found! " + e);
+                } else {
+                    throw e;
+                }
+            }
+        });
+
+        logger.info("Put everything to '" + config.paths.packages + pack + "'.");
 
         // Send Mail
         //try {
@@ -120,7 +121,27 @@ var github = require("./github"),
         //    logger.error("Email sending failed: '" + e + "'");
         //}
 
-    };
+    },
+
+    /**
+     *
+     * @param path
+     */
+    deleteFolderRecursive = function(path) {
+        var files = [];
+        if( fs.existsSync(path) ) {
+            files = fs.readdirSync(path);
+            files.forEach(function(file,index){
+                var curPath = path + "/" + file;
+                if(fs.lstatSync(curPath).isDirectory()) { // recurse
+                    deleteFolderRecursive(curPath);
+                } else { // delete file
+                    fs.unlinkSync(curPath);
+                }
+            });
+            fs.rmdirSync(path);
+        }
+    };;
 
 exports.createModPackFromBranch = createModPackFromBranch;
 exports.createModPackFromTag = createModPackFromTag;
