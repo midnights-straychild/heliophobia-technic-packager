@@ -70,7 +70,7 @@ var github = require("./github"),
             packFilePath = config.paths.packages + pack + ".zip";
 
         if(tag !== undefined) {
-            packWorkingPath = conf.paths.pack + config.packName + "-" + tag;
+            packWorkingPath = config.paths.pack + config.packName + "-" + tag;
         }
 
         logger.info("Packing everthing up.");
