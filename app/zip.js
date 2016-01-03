@@ -1,7 +1,7 @@
 'use strict';
 
 var fs = require("fs"),
-    JSZip = require("JSZip"),
+    JSZip = require("jszip"),
     Zip;
 
 /**
