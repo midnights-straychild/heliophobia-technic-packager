@@ -104,7 +104,7 @@ var github = require("./github"),
         }
 
         // Copy repo files to release directory
-        ["bin", "mods", "config"].forEach(function (folder) {
+        ["bin", "mods", "config", "shaderpacks"].forEach(function (folder) {
             try {
                 if (fs.statSync(path + folder).isDirectory()) {
                     fs.copySync(
