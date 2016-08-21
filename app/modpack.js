@@ -105,24 +105,22 @@ var github = require("./github"),
         }
 
         // Copy repo files to release directory
-        getDirectories(path).forEach(function (folder) {
-            try {
-                if (fs.statSync(path + folder).isDirectory()) {
-                    fs.copySync(
-                        path + folder,
-                        packWorkingPath + "/" + folder,
-                        {preserveTimestamps: true}
-                    );
-                    logger.info("Added '" + folder + "' from '" + path + "'.");
-                }
-            } catch (e) {
-                if (e.code === "ENOENT") {
-                    logger.warn("Folder '" + path + folder + "' not found! " + e);
-                } else {
-                    throw e;
-                }
+        try {
+            if (fs.statSync(path).isDirectory()) {
+                fs.copySync(
+                    path,
+                    packWorkingPath + "/" + folder,
+                    {preserveTimestamps: true}
+                );
+                logger.info("Added '" + path + "'");
             }
-        });
+        } catch (e) {
+            if (e.code === "ENOENT") {
+                logger.warn("Folder '" + path + "' not found! " + e);
+            } else {
+                throw e;
+            }
+        }
 
         logger.info("Put everything to '" + packWorkingPath + "'.");
 
