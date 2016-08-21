@@ -49,13 +49,13 @@ var github = require("./github"),
 
         var path = "tmp/" + GLOBAL.runMode + "/";
 
-        if (!fs.existsSync(path)) {
+        if (fs.existsSync(path)) {
+            logger.info("Repository available. Updating...");
+            github.checkoutTag(tag, path, createPack);
+        } else {
             logger.info("Repository not available. Cloning...");
             github.cloneBranch("master", path, createPack);
         }
-
-        logger.info("Repository available. Updating...");
-        github.checkoutTag(tag, path, createPack);
     },
 
     /**
