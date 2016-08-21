@@ -9,6 +9,7 @@ var github = require("./github"),
     config = require("./config.js").config,
     logger = require("./logger.js").getLogger(),
     email = require("./email.js"),
+    path = require('path'),
 
     /**
      *
