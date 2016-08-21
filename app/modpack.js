@@ -70,7 +70,7 @@ var github = require("./github"),
             packFilePath = config.paths.packages + pack + ".zip";
 
         if(tag !== undefined) {
-            packWorkingPath = config.paths.pack + config.packName + "-" + tag;
+            packWorkingPath = config.paths.packages + config.packName + "-" + tag;
         }
 
         logger.info("Packing everthing up.");
@@ -104,7 +104,7 @@ var github = require("./github"),
         }
 
         // Copy repo files to release directory
-        ["bin", "mods", "config", "shaderpacks"].forEach(function (folder) {
+        getDirectories(path).forEach(function (folder) {
             try {
                 if (fs.statSync(path + folder).isDirectory()) {
                     fs.copySync(
@@ -200,6 +200,17 @@ var github = require("./github"),
         ]);
 
         archive.finalize();
+    },
+
+    /**
+     *
+     * @param srcpath
+     * @returns {Array.<T>|*}
+     */
+    getDirectories = function (srcpath) {
+        return fs.readdirSync(srcpath).filter(function(file) {
+            return fs.statSync(path.join(srcpath, file)).isDirectory();
+        });
     };
 
 
