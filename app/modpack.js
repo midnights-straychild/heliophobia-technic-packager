@@ -109,7 +109,7 @@ var github = require("./github"),
             if (fs.statSync(path).isDirectory()) {
                 fs.copySync(
                     path,
-                    packWorkingPath + "/" + folder,
+                    packWorkingPath + "/",
                     {preserveTimestamps: true}
                 );
                 logger.info("Added '" + path + "'");
